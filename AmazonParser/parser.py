@@ -25,10 +25,15 @@ class Parser:
         return {item[0].strip(): item[1].strip() for item in result}
 
 
-    def get_element_or_none(self, xpath):
+    def get_element_or_none(self, xpath, regex=None):
         result = self.get_elements_or_none(xpath, max_num_result=1)
         if result:
-            return result[0]
+            if not regex:
+                return result[0]
+            else:
+                res = re.findall(regex, result[0])
+                if res:
+                    return res[0]
         return None
     
 
@@ -47,9 +52,9 @@ class Parser:
         """ Return BASE_URL/PARTIAL_URL """
         if partial_url:
             if self.base_url.endswith('/'):
-                return f"{self.base_url}{partial_url}"
+                return f"{self.base_url[:-1]}{partial_url}"
             else:
-                return f"{self.base_url}/{partial_url}"
+                return f"{self.base_url}{partial_url}"
             
 
 class AmazonAEParser(Parser):
@@ -60,6 +65,7 @@ class AmazonAEParser(Parser):
             'brand': self.get_brand_name(),
             'price': self.get_price(),
             'image': self.get_image(),
+            'seller_detail': self.get_seller_detail(),
         }
     
     def get_title(self):
@@ -90,9 +96,23 @@ class AmazonAEParser(Parser):
     
     def get_brand_name(self):
         """ Extract Brand Name """
-        text = self.get_element_or_none('//*[@id="bylineInfo"]/text()').strip()
+        text = self.get_element_or_none('//*[@id="bylineInfo"]/text()', r"Visit the (.+) Store")
         if text:
-            res = re.findall(r"Visit the (.+) Store", text)
-            if res:
-                return res[0].strip()
+            text = text.strip()
+        return text
+            
+    def get_seller_detail(self):
+        """ Extract Seller Details """
+        seller_name = self.get_element_or_none('//a[@id="sellerProfileTriggerId"]/text()')
+        if seller_name:
+            seller_name = seller_name.strip()
+
+        seller_id = self.get_element_or_none('//a[@id="sellerProfileTriggerId"]/@href', r'seller=([\w\d]+)')
+        seller_profile_url = f'/sp/?seller={seller_id}'
+
+        return {
+            'seller_name': seller_name,
+            'seller_profile_url': self.get_full_url(seller_profile_url),
+            'seller_id': seller_id,
+        }
     
