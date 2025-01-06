@@ -58,6 +58,7 @@ class AmazonAEParser(Parser):
         return {
             'title': self.get_title(),
             'price': self.get_price(),
+            'image': self.get_image(),
         }
     
     def get_title(self):
@@ -76,4 +77,13 @@ class AmazonAEParser(Parser):
                 'currency': currency,
                 'value': price,
         }
+    
+    def get_image(self):
+        """ Extract Image URL """
+        landing_img = self.get_element_or_none('//*[@id="landingImage"]/@src')
+        original_size_img = self.get_element_or_none('//img[@id="landingImage"]/@data-old-hires')
+
+        if original_size_img:
+            return original_size_img
+        return landing_img
     
