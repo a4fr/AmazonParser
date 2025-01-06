@@ -26,15 +26,35 @@ class Parser:
 
 
     def get_element_or_none(self, xpath, regex=None):
+        """ Get Element or None
+            if regex is provided, it will return the first match
+            if xpath ended with //text(), it will return the whole text in the element and childrens
+                * if you needed just the element text use /text() instead of //text()
+        """
+        # Get All Text in childrens
+        if xpath.endswith('//text()'):
+            result = self.get_elements_or_none(xpath)
+            if result:
+                return ' '.join([item.strip() for item in result])
+
+        # Get Element
         result = self.get_elements_or_none(xpath, max_num_result=1)
+
+        # Prepair Result
         if result:
-            if not regex:
-                return result[0]
+            result = result[0].strip()
+        else:
+            return None
+
+        # Regex
+        if regex:
+            found = re.findall(regex, result)
+            if found:
+                return found[0]
             else:
-                res = re.findall(regex, result[0])
-                if res:
-                    return res[0]
-        return None
+                return None
+        
+        return result
     
 
     def get_elements_or_none(self, xpath, max_num_result=None):
@@ -42,11 +62,9 @@ class Parser:
         if len(result) == 0:
             return None
         
-        max_num_result = max_num_result if max_num_result > 0 else None
         if max_num_result and len(result) > max_num_result:
             return result[:max_num_result]
         return result
-
 
     def get_full_url(self, partial_url):
         """ Return BASE_URL/PARTIAL_URL """
@@ -66,6 +84,7 @@ class AmazonAEParser(Parser):
             'price': self.get_price(),
             'image': self.get_image(),
             'seller_detail': self.get_seller_detail(),
+            'bought_past_mounth': self.get_bought_past_mounth()
         }
     
     def get_title(self):
@@ -115,4 +134,11 @@ class AmazonAEParser(Parser):
             'seller_profile_url': self.get_full_url(seller_profile_url),
             'seller_id': seller_id,
         }
+    
+    def get_bought_past_mounth(self):
+        """ Extract Sales Details """
+        xpath = '//div[@data-feature-name="socialProofingAsinFaceout"]//span[@class="a-text-bold"]/text()'
+        regex = r'([\d\+]+) bought'
+        bought_past_mounth = self.get_element_or_none(xpath, regex)
+        return bought_past_mounth
     
