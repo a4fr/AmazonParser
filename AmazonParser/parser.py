@@ -2,7 +2,7 @@ from lxml import etree
 import re
 from pprint import pprint
 
-class AmazonParser:
+class Parser:
     def __init__(self, html, base_url=None):
         self.base_url = base_url
         self.html = html
@@ -26,7 +26,10 @@ class AmazonParser:
 
 
     def get_element_or_none(self, xpath):
-        return self.get_elements_or_none(xpath, max_num_result=1)
+        result = self.get_elements_or_none(xpath, max_num_result=1)
+        if result:
+            return result[0]
+        return None
     
 
     def get_elements_or_none(self, xpath, max_num_result=None):
@@ -47,3 +50,30 @@ class AmazonParser:
                 return f"{self.base_url}{partial_url}"
             else:
                 return f"{self.base_url}/{partial_url}"
+            
+
+class AmazonAEParser(Parser):
+    def get_product_details(self):
+        """ Collect Product Details """
+        return {
+            'title': self.get_title(),
+            'price': self.get_price(),
+        }
+    
+    def get_title(self):
+        """ Extract Title """
+        return self.get_element_or_none('//*[@id="productTitle"]/text()').strip()
+    
+    def get_price(self):
+        """ Extract Price and Currency """
+        res = self.get_element_or_none('//span[@id="tp_price_block_total_price_ww"]//span[@class="a-offscreen"]/text()')
+        if res:
+            res = res.strip()
+            price = float(res.split(' ')[1])
+            currency = res.split(' ')[0].strip()
+        
+        return {
+                'currency': currency,
+                'value': price,
+        }
+    
