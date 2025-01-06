@@ -57,6 +57,7 @@ class AmazonAEParser(Parser):
         """ Collect Product Details """
         return {
             'title': self.get_title(),
+            'brand': self.get_brand_name(),
             'price': self.get_price(),
             'image': self.get_image(),
         }
@@ -86,4 +87,12 @@ class AmazonAEParser(Parser):
         if original_size_img:
             return original_size_img
         return landing_img
+    
+    def get_brand_name(self):
+        """ Extract Brand Name """
+        text = self.get_element_or_none('//*[@id="bylineInfo"]/text()').strip()
+        if text:
+            res = re.findall(r"Visit the (.+) Store", text)
+            if res:
+                return res[0].strip()
     
