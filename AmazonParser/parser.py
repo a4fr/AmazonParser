@@ -84,7 +84,8 @@ class AmazonAEParser(Parser):
             'price': self.get_price(),
             'image': self.get_image(),
             'seller_detail': self.get_seller_detail(),
-            'bought_past_mounth': self.get_bought_past_mounth()
+            'bought_past_mounth': self.get_bought_past_mounth(),
+            'bullet_points': self.get_bullet_points(),
         }
     
     def get_title(self):
@@ -141,4 +142,10 @@ class AmazonAEParser(Parser):
         regex = r'([\d\+]+) bought'
         bought_past_mounth = self.get_element_or_none(xpath, regex)
         return bought_past_mounth
+    
+
+    def get_bullet_points(self):
+        """ Extract Bullet Points """
+        result = self.get_elements_or_none('//div[@id="feature-bullets"]/ul//li//text()')
+        return '\n'.join([item.strip() for item in result])
     
