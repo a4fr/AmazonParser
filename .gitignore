@@ -1,2 +1,4 @@
 __pycache__/
 Amazonparser/__pycache__/
+Amazonparser.egg-info/
+dist/
