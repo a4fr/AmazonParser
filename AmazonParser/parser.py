@@ -62,17 +62,17 @@ class Parser:
         return None
 
 
-    def get_element_or_none(self, xpath, regex=None):
+    def get_element_or_none(self, xpath: str, regex=None):
         """ Get Element or None
             if regex is provided, it will return the first match
+            //text() -> means self.full_text()
             if xpath ended with //text(), it will return the whole text in the element and childrens
                 * if you needed just the element text use /text() instead of //text()
         """
         # Get All Text in childrens
         if xpath.endswith('//text()'):
-            result = self.get_elements_or_none(xpath)
-            if result:
-                result = ' '.join([item.strip() for item in result])
+            result = self.get_element_or_none(xpath.replace('//text()', ''))
+            result = result.full_text()
             # Regex
             if regex:
                 return self.extract_with_regex(text=result, regex=regex, pick_one=True)
