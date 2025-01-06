@@ -26,10 +26,18 @@ class AmazonParser:
 
 
     def get_element_or_none(self, xpath):
+        return self.get_elements_or_none(xpath, max_num_result=1)
+    
+
+    def get_elements_or_none(self, xpath, max_num_result=None):
         result = self.tree.xpath(xpath)
         if len(result) == 0:
             return None
-        return result[0]
+        
+        max_num_result = max_num_result if max_num_result > 0 else None
+        if max_num_result and len(result) > max_num_result:
+            return result[:max_num_result]
+        return result
 
 
     def get_full_url(self, partial_url):
