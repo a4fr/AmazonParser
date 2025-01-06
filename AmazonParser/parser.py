@@ -37,6 +37,29 @@ class Parser:
     def extract_metadata(html):
         result = re.findall(r'<!--\s*(\w+)\s*:\s*([^\s]+)\s*-->', html)
         return {item[0].strip(): item[1].strip() for item in result}
+    
+
+    @staticmethod
+    def extract_with_regex(text, regex, pick_one=False):
+        """ Find data with regex
+            pick_one: return one element or list of found elements
+
+            pick_one=False
+            Return: None             -> Nothing found
+                    list[srt]        -> r"(\d+)"
+                    list[tuple[str]] -> r"(\d+) (\w+)"
+
+            pick_one=True
+            Return: None
+                    str
+                    tuple[str]
+        """
+        found = re.findall(regex, text)
+        if found:
+            if pick_one:
+                return found[0]
+            return found
+        return None
 
 
     def get_element_or_none(self, xpath, regex=None):
@@ -50,9 +73,13 @@ class Parser:
             result = self.get_elements_or_none(xpath)
             if result:
                 result = ' '.join([item.strip() for item in result])
+            # Regex
+            if regex:
+                return self.extract_with_regex(text=result, regex=regex, pick_one=True)
+            
         # Get Element
         else:
-            result = self.get_elements_or_none(xpath, max_num_result=1)
+            result = self.get_elements_or_none(xpath, regex=regex, max_num_result=1)
             if result:
                 result = result[0]
                 if isinstance(result, str):
@@ -60,18 +87,10 @@ class Parser:
             else:
                 return None
 
-        # Regex
-        if regex:
-            found = re.findall(regex, result)
-            if found:
-                return found[0]
-            else:
-                return None
-        
         return result
     
 
-    def get_elements_or_none(self, xpath, max_num_result=None):
+    def get_elements_or_none(self, xpath, regex=None, max_num_result=None):
         result = self.tree.xpath(xpath)
         if len(result) == 0:
             return None
@@ -84,7 +103,10 @@ class Parser:
             if isinstance(r, etree._Element):
                 final_result.append(Parser(html=r, base_url=self.base_url))
             else:
-                final_result.append(r)
+                if regex:
+                    final_result.append(self.extract_with_regex(text=r, regex=regex, pick_one=True))
+                else:
+                    final_result.append(r)
         return final_result
 
     def get_full_url(self, partial_url):
@@ -94,6 +116,17 @@ class Parser:
                 return f"{self.base_url[:-1]}{partial_url}"
             else:
                 return f"{self.base_url}{partial_url}"
+            
+    def full_text(self, seperator=' '):
+        all_texts = []
+        for text in self.tree.itertext():
+            text = text.strip()
+            if text:
+                all_texts.append(text)
+        return seperator.join(all_texts)
+    
+    def __str__(self):
+        return self.full_text()
             
 
 class AmazonAEParser(Parser):
@@ -216,7 +249,7 @@ class AmazonAEParser(Parser):
         if not result:
             return None
         
-        ranks = []
+        ranks: list[Parser] = []
         for r in result:
             rank = {
                 'rank': None,
