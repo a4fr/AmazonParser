@@ -85,6 +85,7 @@ class AmazonAEParser(Parser):
             'image': self.get_image(),
             'seller_detail': self.get_seller_detail(),
             'bought_past_mounth': self.get_bought_past_mounth(),
+            'customers_reviews': self.get_reviews(),
             'bullet_points': self.get_bullet_points(),
         }
     
@@ -148,4 +149,21 @@ class AmazonAEParser(Parser):
         """ Extract Bullet Points """
         result = self.get_elements_or_none('//div[@id="feature-bullets"]/ul//li//text()')
         return '\n'.join([item.strip() for item in result])
+    
+    def get_reviews(self):
+        """ Extract Reviews """
+        # Rate
+        review_rate = self.get_element_or_none('//span[@id="acrPopover"]/@title', r'([\d\.]+) out of 5 stars')
+        if review_rate:
+            review_rate = float(review_rate)
+        
+        # Count
+        review_count = self.get_element_or_none('//span[@id="acrCustomerReviewText"]/text()', r'([\d,]+)')
+        if review_count:
+            review_count = int(review_count.replace(',', ''))
+        return {
+            'rate': review_rate,
+            'count': review_count,
+        }
+    
     
