@@ -40,7 +40,7 @@ class Parser:
     
 
     @staticmethod
-    def extract_with_regex(text, regex, pick_one=False):
+    def extract_with_regex(text, regex: str, pick_one=False):
         """ Find data with regex
             pick_one: return one element or list of found elements
 
@@ -54,6 +54,9 @@ class Parser:
                     str
                     tuple[str]
         """
+        if isinstance(text, Parser):
+            text = text.full_text()
+
         found = re.findall(regex, text)
         if found:
             if pick_one:
@@ -62,35 +65,28 @@ class Parser:
         return None
 
 
-    def get_element_or_none(self, xpath: str, regex=None):
+    def get_element_or_none(self, *args, **kwargs):
         """ Get Element or None
+        """
+        result = self.get_elements_or_none(*args, **kwargs, max_num_result=1)
+        if result:
+            result = result[0]
+        return result
+    
+
+    def get_elements_or_none(self, xpath:str, regex=None, max_num_result=None):
+        """ Get Elements or None
             if regex is provided, it will return the first match
+
             //text() -> means self.full_text()
             if xpath ended with //text(), it will return the whole text in the element and childrens
                 * if you needed just the element text use /text() instead of //text()
         """
-        # Get All Text in childrens
+        FLAG_FULL_TEXT = False
         if xpath.endswith('//text()'):
-            result = self.get_element_or_none(xpath.replace('//text()', ''))
-            result = result.full_text()
-            # Regex
-            if regex:
-                return self.extract_with_regex(text=result, regex=regex, pick_one=True)
-            
-        # Get Element
-        else:
-            result = self.get_elements_or_none(xpath, regex=regex, max_num_result=1)
-            if result:
-                result = result[0]
-                if isinstance(result, str):
-                    result = result.strip()
-            else:
-                return None
+            FLAG_FULL_TEXT = True
+            xpath = xpath.replace('//text()', '')
 
-        return result
-    
-
-    def get_elements_or_none(self, xpath, regex=None, max_num_result=None):
         result = self.tree.xpath(xpath)
         if len(result) == 0:
             return None
@@ -100,13 +96,18 @@ class Parser:
         
         final_result = []
         for r in result:
+            # etree._Element
             if isinstance(r, etree._Element):
-                final_result.append(Parser(html=r, base_url=self.base_url))
+                r = Parser(html=r, base_url=self.base_url)
+                if FLAG_FULL_TEXT:
+                    r = r.full_text()
+            # str
             else:
-                if regex:
-                    final_result.append(self.extract_with_regex(text=r, regex=regex, pick_one=True))
-                else:
-                    final_result.append(r)
+                r = r.strip()
+            final_result.append(r)
+
+        if regex:
+            final_result = [self.extract_with_regex(text=r, regex=regex, pick_one=True) for r in final_result]
         return final_result
 
     def get_full_url(self, partial_url):
@@ -155,7 +156,6 @@ class AmazonAEParser(Parser):
         """ Extract Price and Currency
         """
         res = self.get_element_or_none('//span[@id="tp_price_block_total_price_ww"]//span[@class="a-offscreen"]/text()')
-        print(res)
         if res:
             res = res.strip()
             price = float(res.split(' ')[1])
