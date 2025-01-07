@@ -138,6 +138,7 @@ class AmazonAEParser(Parser):
             'title': self.get_title(),
             'brand': self.get_brand_name(),
             'price': self.get_price(),
+            'stock_availability': self.get_stock_availability()
             'image': self.get_image(),
             'seller_detail': self.get_seller_detail(),
             'bought_past_mounth': self.get_bought_past_mounth(),
@@ -291,3 +292,26 @@ class AmazonAEParser(Parser):
                 variables[label] = values
 
             return variables
+        
+    def get_stock_availability(self):
+        """ Return: {"status": False, "quantity": 0}
+                    {"status": True, "quantity": (int)}
+            
+            Quantity: this number in Amazon is at-least quantity.
+                      For example in Amazon.ae quantity=30, it means the stock is more than 30
+        """
+        status = self.get_element_or_none('//*[@id="availability"]//span[contains(@class, "a-color-success")]//text()')
+        if status:
+            # Out of Stock
+            if 'out of stock' in status.lower():
+                return {
+                    'status': False,
+                    'quantity': 0,
+                }
+            # in Stock
+            else:
+                quantity = self.get_element_or_none('//select[@name="quantity"]/option[last()]/@value')
+                return {
+                    'status': True,
+                    'quantity': int(quantity),
+                }
