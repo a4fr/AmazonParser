@@ -157,15 +157,16 @@ class AmazonAEParser(Parser):
         """ Extract Price and Currency
         """
         res = self.get_element_or_none('//span[@id="tp_price_block_total_price_ww"]//span[@class="a-offscreen"]/text()')
+        print(res)
         if res:
             res = res.strip()
             price = float(res.split(' ')[1])
             currency = res.split(' ')[0].strip()
         
-        return {
-                'currency': currency,
-                'value': price,
-        }
+            return {
+                    'currency': currency,
+                    'value': price,
+            }
     
     def get_image(self):
         """ Extract Image URL
@@ -191,15 +192,14 @@ class AmazonAEParser(Parser):
         seller_name = self.get_element_or_none('//a[@id="sellerProfileTriggerId"]/text()')
         if seller_name:
             seller_name = seller_name.strip()
+            seller_id = self.get_element_or_none('//a[@id="sellerProfileTriggerId"]/@href', r'seller=([\w\d]+)')
+            seller_profile_url = f'/sp/?seller={seller_id}'
 
-        seller_id = self.get_element_or_none('//a[@id="sellerProfileTriggerId"]/@href', r'seller=([\w\d]+)')
-        seller_profile_url = f'/sp/?seller={seller_id}'
-
-        return {
-            'seller_name': seller_name,
-            'seller_profile_url': self.get_full_url(seller_profile_url),
-            'seller_id': seller_id,
-        }
+            return {
+                'seller_name': seller_name,
+                'seller_profile_url': self.get_full_url(seller_profile_url),
+                'seller_id': seller_id,
+            }
     
     def get_bought_past_mounth(self):
         """ Extract Sales Details
@@ -216,7 +216,7 @@ class AmazonAEParser(Parser):
         result = self.get_elements_or_none('//div[@id="feature-bullets"]/ul//li//text()')
         return '\n'.join([item.strip() for item in result])
     
-    def get_reviews(self):
+    def get_reviews(self) -> Union[None, dict]:
         """ Extract Reviews
         """
         # Rate
@@ -228,10 +228,12 @@ class AmazonAEParser(Parser):
         review_count = self.get_element_or_none('//span[@id="acrCustomerReviewText"]/text()', r'([\d,]+)')
         if review_count:
             review_count = int(review_count.replace(',', ''))
-        return {
-            'rate': review_rate,
-            'count': review_count,
-        }
+
+        if review_rate and review_count:
+            return {
+                'rate': review_rate,
+                'count': review_count,
+            }
     
     
     def get_date_first_available(self):
@@ -268,23 +270,24 @@ class AmazonAEParser(Parser):
                 ranks.append(rank)
         return ranks
     
-    def get_product_bundles(self):
+    def get_product_bundles(self) -> Union[None, dict]:
         """ Get All bundles of the Product
         """
         variables = {}
         result: list[Parser] = self.get_elements_or_none('//form[@id="twister"]/div')
-        for r in result:
-            # Variable Label
-            label = r.get_element_or_none('.//label/text()')
-            if label:
-                label = label.replace(':', '').strip()
+        if result:
+            for r in result:
+                # Variable Label
+                label = r.get_element_or_none('.//label/text()')
+                if label:
+                    label = label.replace(':', '').strip()
 
-            # Variable Values
-            values = []
-            for res in r.get_elements_or_none('./ul/li'):
-                variable = res.get_element_or_none('./@title', r'Click to select (.+)')
-                values.append(variable.strip())
-            
-            variables[label] = values
+                # Variable Values
+                values = []
+                for res in r.get_elements_or_none('./ul/li'):
+                    variable = res.get_element_or_none('./@title', r'Click to select (.+)')
+                    values.append(variable.strip())
+                
+                variables[label] = values
 
-        return variables
+            return variables
