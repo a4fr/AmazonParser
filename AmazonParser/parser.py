@@ -127,7 +127,7 @@ class Parser:
         return seperator.join(all_texts)
     
     def __str__(self):
-        return self.full_text()
+        return self.html
             
 
 class AmazonAEParser(Parser):
@@ -145,6 +145,7 @@ class AmazonAEParser(Parser):
             'bullet_points': self.get_bullet_points(),
             'date_first_available': self.get_date_first_available(),
             'best_sellers_rank': self.get_best_sellers_rank(),
+            'product_bundles': self.get_product_bundles(),
         }
     
     def get_title(self):
@@ -266,3 +267,24 @@ class AmazonAEParser(Parser):
                 rank['category_url'] = url
                 ranks.append(rank)
         return ranks
+    
+    def get_product_bundles(self):
+        """ Get All bundles of the Product
+        """
+        variables = {}
+        result: list[Parser] = self.get_elements_or_none('//form[@id="twister"]/div')
+        for r in result:
+            # Variable Label
+            label = r.get_element_or_none('.//label/text()')
+            if label:
+                label = label.replace(':', '').strip()
+
+            # Variable Values
+            values = []
+            for res in r.get_elements_or_none('./ul/li'):
+                variable = res.get_element_or_none('./@title', r'Click to select (.+)')
+                values.append(variable.strip())
+            
+            variables[label] = values
+
+        return variables
