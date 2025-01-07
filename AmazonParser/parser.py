@@ -138,7 +138,7 @@ class AmazonAEParser(Parser):
             'title': self.get_title(),
             'brand': self.get_brand_name(),
             'price': self.get_price(),
-            'stock_availability': self.get_stock_availability()
+            'stock_availability': self.get_stock_availability(),
             'image': self.get_image(),
             'seller_detail': self.get_seller_detail(),
             'bought_past_mounth': self.get_bought_past_mounth(),
