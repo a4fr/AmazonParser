@@ -13,7 +13,7 @@ class Parser:
         if isinstance(html, str):
             self.html = html
         else:
-            self.html = str(etree.tostring(html))
+            self.html = etree.tostring(html, encoding='unicode')
         
         self.base_url = base_url
         self.metadata = self.extract_metadata(self.html)
@@ -274,24 +274,30 @@ class AmazonAEParser(Parser):
     def get_product_bundles(self) -> Union[None, dict]:
         """ Get All bundles of the Product
         """
-        variables = {}
-        result: list[Parser] = self.get_elements_or_none('//form[@id="twister"]/div')
+        bundles = {}
+        result: list[Parser] = self.get_elements_or_none('//div[@data-csa-c-content-id="twister"]//li')
         if result:
             for r in result:
-                # Variable Label
-                label = r.get_element_or_none('.//label/text()')
-                if label:
-                    label = label.replace(':', '').strip()
-
-                # Variable Values
-                values = []
-                for res in r.get_elements_or_none('./ul/li'):
-                    variable = res.get_element_or_none('./@title', r'Click to select (.+)')
-                    values.append(variable.strip())
+                # Title
+                # Attempt 1
+                title = r.full_text()
+                # Attempt 2
+                if not title:
+                    title = r.get_element_or_none('./@title', r'Click to select (.+)')
                 
-                variables[label] = values
+                # ASIN
+                # Attempt 1
+                asin = r.get_element_or_none('./@data-csa-c-item-id')
+                # Attempt 2
+                if not asin:
+                    asin = r.get_element_or_none('./@data-dp-url', r'/dp/([\w\d]+)/ref=twister_[\w\d]+')
+                    asin = asin.strip() if asin else asin
 
-            return variables
+                if title and asin:
+                    bundles[asin] = title
+        if bundles:
+            return bundles
+
         
     def get_stock_availability(self):
         """ Return: {"status": False, "quantity": 0}
