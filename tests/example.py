@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, '../AmazonParser')
 from AmazonParser import *
 import glob
+from pprint import pprint
 
 
 if __name__ == '__main__':
@@ -15,6 +16,5 @@ if __name__ == '__main__':
             print(f'{key}: {value}')
         
         print('\nPage Detail:')
-        for key, value in p.get_product_details().items():
-            print(f'{key}: {value}')
+        pprint(p.get_product_details())
 
