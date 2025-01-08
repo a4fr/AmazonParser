@@ -130,7 +130,7 @@ class Parser:
         return self.html
             
 
-class AmazonAEParser(Parser):
+class AmazonAEProductPageParser(Parser):
     def get_product_details(self):
         """ Collect Product Details
         """
