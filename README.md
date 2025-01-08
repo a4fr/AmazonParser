@@ -34,12 +34,12 @@ html = AmazonAEProductPageParser.get_html_from_file(path)
 product_data = AmazonAEProductPageParser(html=html, base_url="https://www.amazon.ae/")
 
 # Print the parsed data
-print(product_data)
+print(product_data.get_product_details())
 ```
 
 ### Example Output
 
-The `parse_product_page` method returns a dictionary with the following structure:
+The `get_product_details` method returns a dictionary with the following structure:
 
 ```python
 {'best_sellers_rank': [{'category': 'Mobile Phones & Communication Products',
