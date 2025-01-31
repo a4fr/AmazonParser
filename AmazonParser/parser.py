@@ -249,14 +249,14 @@ class AmazonAEProductPageParser(Parser):
         """ Extract Best Sellers Rank
         """
         xpaths = [
-            '//th[contains(text(), "Best Sellers Rank")]/../td/span/span',  # Tbale
+            '//th[contains(text(), "Best Sellers Rank")]/../td/span/span',  # Table
             '//span[contains(text(), "Best Sellers Rank")]/../../..//li',   # Bullet Points
         ]
         for xpath in xpaths:
             result = self.get_elements_or_none(xpath)
             if result:
                 break
-            
+
         # No result in all XPaths
         if not result:
             return None
