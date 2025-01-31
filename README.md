@@ -3,7 +3,7 @@ Python Library for Parsing Amazon Pages
 
 ## Description
 
-AmazonParser is a Python library designed to parse product information from Amazon product pages. It extracts useful data such as product title, price, ratings, and more.
+AmazonParser is a Python library designed to parse product information from Amazon product pages. It extracts useful data such as product title, price, ratings, and more. It's designed to scrape data mostly by `XPath` and `RegEx`. This design helps to be more modular and configable.
 
 ## Prerequisites
 
