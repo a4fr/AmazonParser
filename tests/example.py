@@ -6,7 +6,7 @@ from pprint import pprint
 
 
 if __name__ == '__main__':
-    for path in glob.glob('tests/archives/*.html'):
+    for path in glob.glob('tests/archives/B08CZDYNF7.html'):
         print('\n',path)
         html = AmazonAEProductPageParser.get_html_from_file(path)
         p = AmazonAEProductPageParser(html=html, base_url="https://www.amazon.ae/") # Create an instance of AmazonAEProductPageParser
