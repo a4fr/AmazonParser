@@ -248,7 +248,16 @@ class AmazonAEProductPageParser(Parser):
     def get_best_sellers_rank(self):
         """ Extract Best Sellers Rank
         """
-        result = self.get_elements_or_none('//th[contains(text(), "Best Sellers Rank")]/../td/span/span')
+        xpaths = [
+            '//th[contains(text(), "Best Sellers Rank")]/../td/span/span',  # Tbale
+            '//span[contains(text(), "Best Sellers Rank")]/../../..//li',   # Bullet Points
+        ]
+        for xpath in xpaths:
+            result = self.get_elements_or_none(xpath)
+            if result:
+                break
+            
+        # No result in all XPaths
         if not result:
             return None
         
@@ -262,9 +271,9 @@ class AmazonAEProductPageParser(Parser):
             found = r.get_element_or_none('.//text()', regex=r'#([\d]+) in ([\w\s&]+)')
             if found:
                 rank['rank'] = int(found[0])
-                rank['category'] = found[1].strip()
+                rank['category'] = ' '.join(self.extract_with_regex(found[1], r'([^\s]+)'))
                 
-                url = r.get_element_or_none('./a/@href')
+                url = r.get_element_or_none('.//a/@href')
                 url = self.get_full_url(partial_url=url)
                 rank['category_url'] = url
                 ranks.append(rank)
