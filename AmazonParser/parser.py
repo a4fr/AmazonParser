@@ -159,7 +159,6 @@ class AmazonAEProductPageParser(Parser):
         """
         res = self.get_element_or_none('//span[@id="tp_price_block_total_price_ww"]//span[@class="a-offscreen"]/text()')
         if res:
-            print(res)
             price = float(self.extract_with_regex(res, r'([\d\.]+)', pick_one=True))
             currency = self.extract_with_regex(res, r'([a-zA-Z]+)', pick_one=True).strip()
         
