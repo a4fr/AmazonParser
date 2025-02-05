@@ -57,4 +57,18 @@ class AmazonAEBestsellersPageParser(Parser):
     def get_nav_tree(self):
         """ Extract all url from Navigation Tree in the left side of page
         """
-        pass
+        links = []
+        for a in self.get_elements_or_none('//div[contains(@class, "browse-group")]/../div[2]//a'):
+            # URL
+            url = self.get_full_url(a.get_element_or_none('./@href'))
+            url = url[:url.rfind('/')]
+            
+            # Title
+            title = a.get_element_or_none('.//text()')
+            
+            link = {
+                'title': title,
+                'url': url,
+            }
+            links.append(link)
+        return links
