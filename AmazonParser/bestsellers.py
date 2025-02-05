@@ -2,6 +2,8 @@ from .parser import Parser
 
 class AmazonAEBestsellersPageParser(Parser):
     def get_products(self):
+        """ Extract all products from the page
+        """
         products = []
         for product in self.get_elements_or_none('//div[@id="gridItemRoot"]//div[@data-asin!=""]'):
             asin = product.get_element_or_none('./@data-asin')
@@ -50,3 +52,9 @@ class AmazonAEBestsellersPageParser(Parser):
             }
             products.append(product)
         return products
+    
+
+    def get_nav_tree(self):
+        """ Extract all url from Navigation Tree in the left side of page
+        """
+        pass
