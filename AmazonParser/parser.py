@@ -109,6 +109,11 @@ class Parser:
         if regex:
             final_result = [self.extract_with_regex(text=r, regex=regex, pick_one=True) for r in final_result]
         return final_result
+    
+    def get(self, attribute):
+        """ Get Attribute from the class
+        """
+        return self.get_elements_or_none(f'./@{attribute}')
 
     def get_full_url(self, partial_url):
         """ Return BASE_URL/PARTIAL_URL """
