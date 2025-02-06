@@ -1,8 +1,10 @@
 from .parser import Parser
+import json
 
 class AmazonAEBestsellersPageParser(Parser):
     def get_products(self):
         """ Extract all products from the page
+            This funstion has limitation of 30 products (because of Amazon's lazy loading)
         """
         products = []
         for product in self.get_elements_or_none('//div[@id="gridItemRoot"]//div[@data-asin!=""]'):
@@ -54,6 +56,19 @@ class AmazonAEBestsellersPageParser(Parser):
         return products
     
 
+    def get_asins(self):
+        """ Extract all ASINs from the page
+            This function doesn't have limitation of 30 products, returns 50 products
+        """
+        asins = []
+        data_client_recs_list = self.get_element_or_none('//div[@class="p13n-desktop-grid"]/@data-client-recs-list')
+        if data_client_recs_list:
+            data_client_recs_list = json.loads(data_client_recs_list)
+            asins = [item['id'] for item in data_client_recs_list]
+
+        return asins
+    
+    
     def get_nav_tree(self):
         """ Extract all url from Navigation Tree in the left side of page
         """
