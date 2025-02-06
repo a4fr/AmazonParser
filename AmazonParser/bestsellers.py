@@ -62,7 +62,7 @@ class AmazonAEBestsellersPageParser(Parser):
             # URL
             url = self.get_full_url(a.get_element_or_none('./@href'))
             url = url[:url.rfind('/')]
-            
+
             # Title
             title = a.get_element_or_none('.//text()')
             
