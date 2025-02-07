@@ -2,6 +2,20 @@ from .parser import Parser
 import json
 
 class AmazonAEBestsellersPageParser(Parser):
+    def __init__(self, html, base_url=None):
+        super().__init__(html, base_url)
+        self.is_it_valid_html = self.is_it_valid_html(html)
+    
+    @staticmethod
+    def is_it_valid_html(html):
+        # HTML is None
+        if html is None:
+            return False
+        # Not have captcha
+        if '<form method="get" action="/errors/validateCaptcha"' in html:
+            return False
+        return True
+
     def get_products(self):
         """ Extract all products from the page
             This funstion has limitation of 30 products (because of Amazon's lazy loading)
