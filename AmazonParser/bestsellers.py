@@ -9,7 +9,7 @@ class AmazonAEBestsellersPageParser(Parser):
     @staticmethod
     def is_it_valid_html(html):
         # HTML is None
-        if html is None:
+        if not html:
             return False
         # Not have captcha
         if '<form method="get" action="/errors/validateCaptcha"' in html:
