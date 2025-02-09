@@ -5,6 +5,16 @@ from pprint import pprint
 from datetime import datetime
 
 class AmazonAEProductPageParser(Parser):
+    @staticmethod
+    def is_it_valid_html(html):
+        # HTML is None
+        if html is None:
+            return False
+        # Not have captcha
+        if '<form method="get" action="/errors/validateCaptcha"' in html:
+            return False
+        return True
+    
     def get_product_details(self):
         """ Collect Product Details
         """
