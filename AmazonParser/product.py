@@ -209,7 +209,8 @@ class AmazonAEProductPageParser(Parser):
             # in Stock
             else:
                 quantity = self.get_element_or_none('//select[@name="quantity"]/option[last()]/@value')
-                return {
-                    'status': True,
-                    'quantity': int(quantity),
-                }
+                if quantity:
+                    return {
+                        'status': True,
+                        'quantity': int(quantity),
+                    }
