@@ -97,7 +97,8 @@ class AmazonAEProductPageParser(Parser):
         """ Extract Bullet Points
         """
         result = self.get_elements_or_none('//div[@id="feature-bullets"]/ul//li//text()')
-        return '\n'.join([item.strip() for item in result])
+        if result:
+            return '\n'.join([item.strip() for item in result])
     
     def get_reviews(self) -> Union[None, dict]:
         """ Extract Reviews
@@ -200,7 +201,7 @@ class AmazonAEProductPageParser(Parser):
         status = self.get_element_or_none('//*[@id="availability"]//span[contains(@class, "a-color-success")]//text()')
         if status:
             # Out of Stock
-            if 'out of stock' in status.lower():
+            if 'out of stock' in status.lower() or 'currently unavailable' in status.lower():
                 return {
                     'status': False,
                     'quantity': 0,
